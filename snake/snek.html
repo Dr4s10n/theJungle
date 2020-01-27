@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html id="overflowHidden">
+<head>
+	<title>Snakes</title>
+
+	<link rel="stylesheet" type="text/css" href="snakeStyle.css">
+</head>
+<body id="overflowHidden">
+
+<div>
+<h1 style="color: #003500;" class="title">Welcome To The Jungle</h1>
+<br>
+<canvas width="400" height="400" id="game"></canvas>
+<div class="text">
+Score = <i id="score">0</i>
+Length = <i id="len">4</i>
+<center><button class= "button round" onclick= "toHome();">Home</button>
+<button class= "button round" id='b' onclick='onSnakeDeath();'>Start</button>
+</div>
+</center>
+<script>
+
+var colour=false;
+var powerupS=0; 
+var powerupP=false;
+var ii=0;
+var snd=new Audio("apple.wav");
+var scream=new Audio("SCREAM3.wav");
+var score=0;
+var canvas = document.getElementById('game');
+var context = canvas.getContext('2d');
+
+var grid = 16;
+var count = 0;
+  
+var snake = {
+  x: 160,
+  y: 160,
+  
+  dx: grid,
+  dy: 0,
+
+  cells: [],
+  
+  maxCells: 4
+};
+var len=snake.maxCells;
+var apple = {
+  x: 320,
+  y: 320
+};
+function onSnakeDeath(){
+	scream.play();
+	snake.x = 160;
+	snake.y = 160;
+	snake.cells = [];
+	snake.maxCells = 4;
+	len=4;
+	snake.dx = grid;
+	snake.dy = 0;
+	score=0;
+	grid=16;
+	powerupS=0;
+	document.getElementById("score").innerHTML=score;
+	document.getElementById("len").innerHTML=len;
+	document.getElementById("game").style.borderColor = "lime";
+	
+	apple.x = getRandomInt(0, 25) * grid;
+	apple.y = getRandomInt(0, 25) * grid;
+}
+
+function toHome()	{
+	window.location.href= 'file:///C:/Users/100462915/Documents/snake/index.html';
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+function loop() {
+  requestAnimationFrame(loop);
+
+
+  if (++count < 4) {
+    return;
+  }
+  count = 0;
+  context.clearRect(0,0,canvas.width,canvas.height);
+
+  snake.x+=snake.dx;
+  snake.y+=snake.dy;
+  if(powerupP===false)	{
+	  if(snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height) {
+		onSnakeDeath()
+		}	
+  }	else	{
+	if(snake.x < 0)	{
+		snake.x=canvas.width;
+	}	else if(snake.x >= canvas.width)	{
+		snake.x=0;
+	}	else if(snake.y < 0)	{
+		snake.y=canvas.height;
+	}	else if(snake.y >= canvas.height)	{
+		snake.y=0;
+	}
+  }
+
+		
+  snake.cells.unshift({x: snake.x, y: snake.y});
+
+  if (snake.cells.length > snake.maxCells) {
+    snake.cells.pop();
+  }
+  if(powerupS===0)	{
+	context.fillStyle='darkgreen';
+  }	else	{
+	context.fillStyle="yellow";
+  }
+  context.fillRect(apple.x, apple.y, grid-1, grid-1);
+  switch(ii)	{
+	case 0:
+	context.fillStyle = 'orange';
+	if(colour===true)	{
+		document.getElementById("game").style.borderColor = "orange";
+	}
+	ii++;
+	break;
+  case 1:
+	context.fillStyle = 'cyan';
+	if(colour===true)	{
+		document.getElementById("game").style.borderColor = "cyan";
+	}
+	ii++;
+	break;
+  case 2:
+	context.fillStyle = 'lime';
+	if(colour===true)	{
+		document.getElementById("game").style.borderColor = "lime";
+	}
+	ii++;
+	break;
+  case 4:
+	context.fillStyle = 'blue';
+	if(colour===true)	{
+		document.getElementById("game").style.borderColor = "blue";
+	}
+	ii++;
+	break;
+  case 6:
+	context.fillStyle = 'purple';
+	if(colour===true)	{
+		document.getElementById("game").style.borderColor = "purple";
+	}
+	ii++;
+  case 7: 
+	context.fillStyle = '#FF6EFF';
+	if(colour===true)	{
+		document.getElementById("game").style.borderColor = "#FF6EFF";
+	}
+	ii=0;
+  default: 	ii++;
+  }
+  snake.cells.forEach(function(cell, index) {
+    
+    context.fillRect(cell.x, cell.y, grid-1, grid-1);  
+
+    if (cell.x === apple.x && cell.y === apple.y) {
+      snake.maxCells++;
+	  
+	  if(powerupS===0)	{
+	    snake.maxCells++;
+		score+=100;
+		powerupP=false;
+		colour=false;
+		document.getElementById("game").style.borderColor = "lime";
+	  }	else	{
+	    snake.maxCells+=3;
+		score+=300;
+		powerupP=true;
+		colour=true;
+	  }
+	  len=snake.maxCells;
+	  if(getRandomInt(0, 100)<=90)	{
+		powerupS=0;
+	  }	else	{
+		powerupS=1;
+	  }
+	  
+      document.getElementById("len").innerHTML=len;
+	  document.getElementById("score").innerHTML=score
+      apple.x = getRandomInt(0, 25) * grid;
+      apple.y = getRandomInt(0, 25) * grid;
+	  snd.play();
+    }
+
+    for (var i = index + 1; i < snake.cells.length; i++) {
+      
+      if (cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) {
+		onSnakeDeath()
+      }
+    }
+  });
+}
+var key= function(e) {
+	  
+	  if (e.which === 65 && snake.dx === 0) {
+		snake.dy = 0;
+		snake.dx = -grid;
+	  }
+	  else if (e.which === 87 && snake.dy === 0) {
+		snake.dy = -grid;
+		snake.dx = 0;
+	  }
+	  else if (e.which === 68 && snake.dx === 0) {
+		snake.dx = grid;
+		snake.dy = 0;
+	  }
+	  else if (e.which === 83 && snake.dy === 0) {
+		snake.dy = grid;
+		snake.dx = 0;
+	  }
+	   else if (e.which === 37 && snake.dx === 0) {
+		snake.dx = -grid;
+		snake.dy = 0;
+	  }
+	  else if (e.which === 38 && snake.dy === 0) {
+		snake.dy = -grid;
+		snake.dx = 0;
+	  }
+	  else if (e.which === 39 && snake.dx === 0) {
+		snake.dx = grid;
+		snake.dy = 0;
+	  }
+	  else if (e.which === 40 && snake.dy === 0) {
+		snake.dy = grid;
+		snake.dx = 0;
+	  }
+};
+document.addEventListener('keydown', key);
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
